@@ -134,9 +134,11 @@ spec:
 ```
 nodeip:30000번으로 접속하면 젠킨스 초기 설정 화면이 생성됨..
 
-<span style="color:yellow">
-#### 에러 - pod이 crashloopbackoff 상태로 jenkins 접속이 안됨
+**
+<span style="color:red;">
+  에러 - pod이 crashloopbackoff 상태로 jenkins 접속이 안됨
 </span>
+**
 ```
 $ kubectl get pods --all-namespaces
 NAMESPACE              NAME                                        READY   STATUS             RESTARTS   AGE
