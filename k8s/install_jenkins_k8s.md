@@ -102,6 +102,45 @@ spec:
 해당 파일을 jenkins 네임스페이스에서 생성하면 
 docker hub에서 이미지를 불러와서 pod가 생김 
 
+#### jenkins role 설정
+api, 리소스 사용권한 명시하는 
+```
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: jenkins
+  name: jenkins-master
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: jenkins-master
+  namespace: jenkins
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jenkins-master
+subjects:
+- kind: ServiceAccount
+  name: jenkins-master
+```
+
 #### jenkins service 설정 
 Pod의 네트워크 설정 
 ```
