@@ -132,14 +132,11 @@ spec:
   selector:
     app: jenkins
 ```
-nodeip:30000번으로 접속하면 젠킨스 초기 설정 화면이 생성됨. 
+nodeip:30000번으로 접속하면 젠킨스 초기 설정 화면이 생성됨.  
 
----
+---  
 
-#### 에러
-<span style="color:red;">
-pod이 crashloopbackoff 상태로 jenkins 접속이 안됨
-</span>
+#### 에러: pod이 crashloopbackoff 상태로 jenkins 접속이 안됨  
 ```
 $ kubectl get pods --all-namespaces
 NAMESPACE              NAME                                        READY   STATUS             RESTARTS   AGE
@@ -152,16 +149,20 @@ kube-system            kube-proxy-x29pv                            1/1     Runni
 kube-system            kube-scheduler-minikube                     1/1     Running            5          6d3h
 kube-system            storage-provisioner                         1/1     Running            15         6d3h
 ```
-로그 찍어보기 시도하면 
+
+로그 찍어보기 시도하면 아래와 같이 permission 없어서 안된다고 뜸 
 ```
 $ kubectl -n ns-jenkins logs jenkins-655f99d864-kkfk5
 touch: cannot touch '/var/jenkins_home/copy_reference_file.log': Permission denied
 Can not write to /var/jenkins_home/copy_reference_file.log. Wrong volume permissions?
 ```
+
+위에서 말한 volume permission은 docker의 minikube volume에 대한 권한이다.
 docker 설정에서 minikube volume의 mount path를 알아내서 권한을 모두 열어준다.
 ```
 $ sudo chown -R 1000  /var/lib/docker/volumes/minikube/_data
 ```
+
 다시 pod 확인해보니 실행 가능 상태(pod 설정 상태가 컨테이너가 에러로 종료되면 계속해서 다시 시작하게 하고 있음)
 ```
 $ kubectl get all -n ns-jenkins 
