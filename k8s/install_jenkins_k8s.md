@@ -114,7 +114,7 @@ spec:
   ports:
     - port: 8080
       targetPort: 8080
-      nodePort: 30000
+      nodePort: 32000
   selector:
     app: jenkins
 
@@ -136,8 +136,9 @@ nodeip:30000번으로 접속하면 젠킨스 초기 설정 화면이 생성됨.
 
 ---
 
+#### 에러
 <span style="color:red;">
-  에러 - pod이 crashloopbackoff 상태로 jenkins 접속이 안됨
+pod이 crashloopbackoff 상태로 jenkins 접속이 안됨
 </span>
 ```
 $ kubectl get pods --all-namespaces
@@ -151,4 +152,39 @@ kube-system            kube-proxy-x29pv                            1/1     Runni
 kube-system            kube-scheduler-minikube                     1/1     Running            5          6d3h
 kube-system            storage-provisioner                         1/1     Running            15         6d3h
 ```
+로그 찍어보기 시도하면 
+```
+$ kubectl -n ns-jenkins logs jenkins-655f99d864-kkfk5
+touch: cannot touch '/var/jenkins_home/copy_reference_file.log': Permission denied
+Can not write to /var/jenkins_home/copy_reference_file.log. Wrong volume permissions?
+```
+docker 설정에서 minikube volume의 mount path를 알아내서 권한을 모두 열어준다.
+```
+$ sudo chown -R 1000  /var/lib/docker/volumes/minikube/_data
+```
+다시 pod 확인해보니 실행 가능 상태(pod 설정 상태가 컨테이너가 에러로 종료되면 계속해서 다시 시작하게 하고 있음)
+```
+$ kubectl get all -n ns-jenkins 
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/jenkins-655f99d864-kkfk5   1/1     Running   22         67m
 
+NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+service/jenkins        NodePort    10.105.193.242   <none>        8080:32000/TCP   67m
+service/jenkins-jnlp   ClusterIP   10.107.249.94    <none>        50000/TCP        67m
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/jenkins   1/1     1            1           67m
+
+NAME                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/jenkins-655f99d864   1         1         1       67m
+```
+
+#### 젠킨스 초기 설정 및 플러그인 설치
+![image](https://user-images.githubusercontent.com/33820372/112425464-75180600-8d79-11eb-8346-77216a6c7c20.png)
+```
+$ kubectl -n ns-jenkins logs jenkins-655f99d864-kkfk5
+```
+pod에서 컨테이너 생성할 때 초기 비밀번호가 있음
+
+비밀번호 치고, 플러그인 설치하고 계정설정하면 초기 화면으로 접속가능
+pv,pvc 설정을 했기 때문에 node 재시작해도 설정 정보 남아있음
