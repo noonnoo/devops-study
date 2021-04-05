@@ -21,5 +21,34 @@
 kubectl cp .hpi파일 네임스페이스/파드이름:/var/jenkins_home/plugins/
 ```  
 ---  
-### 젠킨스 클라우드 구성  
+
 #### 젠킨스 마스터 service account를 credential manager에 등록  
+credential 만들 때 secret-text로 생성. token의 이름은 마음대로 설정하되, secret에는 위의 명령어 쳐서 나오는 비밀번호 입력하여 credential 생성한다.  
+(쿠버네티스 환경에 접근할 수 있는 권한)  
+![image](https://user-images.githubusercontent.com/33820372/113526057-5f190980-95f3-11eb-9036-9f30e5db61ed.png)  
+```
+kubectl get secret $(kubectl get sa SA이름 -n 네임스페이스이름 -o jsonpath={.secrets[0].name}) -n 네임스페이스이름 -o jsonpath={.data.token} | base64 --decode
+```  
+
+### 젠킨스 클라우드 구성  
+젠킨스 관리 > 노드 관리 > configure clouds 에서 "kubernetes" 선택하여 새로운 클라우드 환경 생성  
+* kubernetes API server address 알아내는 명령어  
+```
+kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " "
+```  
+* kubernetes server CA certificate key 값 알아내는 명령어  
+```
+kubectl get secret $(kubectl get sa jenkins-master -n jenkins -o jsonpath={.secrets[0].name}) -n jenkins -o jsonpath={.data.'ca\.crt'} | base64 --decode
+```  
+![image](https://user-images.githubusercontent.com/33820372/113526004-182b1400-95f3-11eb-9ff6-13a77fe25d81.png)  
+
+#### 젠킨스 슬레이브를 위한 Pod와 Container 설정하기  
+jenkinsci/slave 이미지를 끌어와서 슬레이브 pod 설정
+![image](https://user-images.githubusercontent.com/33820372/113530419-f9337e80-9600-11eb-8670-71e0fc11f1c0.png)
+
+---
+
+### jenkins job 구성하기
+restrict where this project can be run에 jenkins-slave로 설정하기
+
+job에서 git 소스 가져오는 설정 - credential 필요 (git credential 설정은 우측 블로그 참고 https://jojoldu.tistory.com/442)
