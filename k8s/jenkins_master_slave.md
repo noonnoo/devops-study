@@ -43,8 +43,8 @@ kubectl get secret $(kubectl get sa jenkins-master -n jenkins -o jsonpath={.secr
 ![image](https://user-images.githubusercontent.com/33820372/113526004-182b1400-95f3-11eb-9ff6-13a77fe25d81.png)  
 
 #### 젠킨스 슬레이브를 위한 Pod와 Container 설정하기  
-jenkinsci/slave 이미지를 끌어와서 슬레이브 pod 설정
-![image](https://user-images.githubusercontent.com/33820372/113530419-f9337e80-9600-11eb-8670-71e0fc11f1c0.png)
+jenkinsci/slave 이미지를 끌어와서 슬레이브 pod 설정  
+![image](https://miro.medium.com/max/1000/1*tqKEOBuMQ2dLzTmzgr_eQg.png)
 
 ---
 
